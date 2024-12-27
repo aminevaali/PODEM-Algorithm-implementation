@@ -79,7 +79,6 @@ bool podemRecursion(Circuit* myCircuit);
 bool getObjective(Gate* &g, char &v, Circuit* myCircuit);
 void updateDFrontier(Circuit* myCircuit);
 void backtrace(Gate* &pi, char &piVal, Gate* objGate, char objVal, Circuit* myCircuit);
-
 //--------------------------
 
 
@@ -124,11 +123,8 @@ int main(int argc, char* argv[]) {
   yyparse();
   fclose(benchFile);
 
-  myCircuit->setupCircuit();
-
+  myCircuit->setupCircuit(); 
   cout << endl;
-   
-  
 
   // Setup the output text file
   ofstream outputStream;
@@ -137,7 +133,7 @@ int main(int argc, char* argv[]) {
     cout << "ERROR: Cannot open file " << argv[2] << " for output" << endl;
     return 1;
   }
-    
+   
   // Open the fault file.
   ifstream faultStream;
   string faultLocStr;
@@ -589,59 +585,35 @@ void setValueCheckFault(Gate* g, char gateValue) {
 bool podemRecursion(Circuit* myCircuit) {
 
   // If D or D' is at an output, then return true
-    char val;
-	
-	vector<Gate*> opGates = myCircuit->getPOGates();
-	for (int i=0; i<opGates.size(); i++) {
-    val = opGates[i]->getValue();
-    if ((val == LOGIC_D) || (val == LOGIC_DBAR)) 
-      return true;    
-	}
+    
+  // Gate* g;
+  // char v;  
 
-   Gate* g;
-   char v;  
-
-  // Call the getObjective function. Store the result in g and v.    
-  // If getObjective fails, return false	
-  
-	bool obj = getObjective(g, v, myCircuit);
-	///////////
-	if (obj == false ) return false;
-	
-  Gate* pi;
-  char piVal;
+  // Call the getObjective function. Store the result in g and v.  
+  // If getObjective fails, return false
+    
+  //Gate* pi;
+  //char piVal;
   
   // Call the backtrace function. Store the result in pi and piVal.
   
-  backtrace(pi, piVal, g, v, myCircuit);
-  
   // Set the value of pi to piVal. Use your setValueCheckFault function (see above)
   // to make sure if there is a fault on the PI gate, it correctly gets set.
-  
-  setValueCheckFault(pi, piVal);
-  
+
   // Now, determine the implications of the input you set by simulating 
   // the circuit by calling simFullCircuit(myCircuit);
-  
-  simFullCircuit(myCircuit);
-   
-  
-  if (podemRecursion(myCircuit)) return true;
+  // Important: after you write the event-driven simulator for part 2, replace
+  // this call to simFullCircuit with a call to launch your event-driven
+  // simulator.
+
+  // Recursively call this function. If the recursive function succeeds
+  // return true.
+
   // If the recursive call fails, set the opposite PI value, simulate, it and recurse.
   // If this recursive call succeeds, return true.
   
-  char notpiVal;
-  notpiVal= LogicNot(piVal);
-  
-  setValueCheckFault(pi, notpiVal); 
-  
-  simFullCircuit(myCircuit);
-  if (podemRecursion(myCircuit)) return true;
-  
   // If we get to here, neither pi=v nor pi = v' worked. So, set pi to value X and 
   // return false.
-  
-  setValueCheckFault(pi, LOGIC_X);
 
   return false;
 
@@ -666,18 +638,11 @@ bool getObjective(Gate* &g, char &v, Circuit* myCircuit) {
   // fault on its output. Use that when you check if the fault is
   // excited.
 
-  
   // Another note: if the fault is not excited but the fault 
   // location value is not X, then we have failed to activate 
   // the fault. In this case getObjective should fail and Return false.  
-	
-	if (faultLocation->getValue()== LOGIC_X) {g= faultLocation; v=faultActivationVal; 
-		return true;}
-	
-	if (faultLocation->getValue()== LOGIC_ONE || faultLocation->getValue()== LOGIC_ZERO)
-	{return false;} 
-	//setValueCheckFault(faultLocation, faultLocation->getValue());
 
+  
   // If the fault is already activated, then you will need to 
   // use the D-frontier to find an objective.
   // Before you use the D-frontier you should update it by running:
@@ -689,39 +654,17 @@ bool getObjective(Gate* &g, char &v, Circuit* myCircuit) {
   
   // If the D frontier is empty after update, then getObjective fails
   // and should return false.
-	
-	if (dFrontier.empty()) return false;
-	
-	
+
   // getObjective needs to choose a gate from the D-Frontier.
   // For part 1, pick dFrontier[0] if you want to match my reference outputs.
-	Gate* d;	
-	d = dFrontier[0];
-	
-	// Later, a possible optimization is to use the 
+
+  // Later, a possible optimization is to use the 
   // SCOAP observability metric or other smart methods to choose this carefully.
     
 
   // Lastly, set the values of g and v based on the
   // gate you chose from the D-Frontier.
 
-	
-	vector<Gate*> dinputs = d->get_gateInputs();
-	
-		for (int i=0; i<dinputs.size(); i++) 
-			{
-				if (dinputs[i]->getValue()== LOGIC_X)
-				{
-					g = dinputs[i]; break;
-				}
-			}
-			
-	if (d->get_gateType()==GATE_AND || d->get_gateType()==GATE_NAND) v=LOGIC_ONE;
-	else if (d->get_gateType()==GATE_OR || d->get_gateType()==GATE_NOR) v=LOGIC_ZERO;
-	else if (d->get_gateType()==GATE_XOR || d->get_gateType()==GATE_XNOR) v=LOGIC_ZERO;
-	else v=LOGIC_X;
-	
-	
   return true;
 
 }
@@ -737,34 +680,9 @@ bool getObjective(Gate* &g, char &v, Circuit* myCircuit) {
 void updateDFrontier(Circuit* myCircuit) {
   // Procedure:
   //  - clear the dFrontier vector (stored as the global variable dFrontier -- see the top of the file)
-  
-	dFrontier.clear();
-	
   //  - loop over all gates in the circuit; for each gate, check if it should be on D-frontier; if it is,
   //    add it to the dFrontier vector.
 
-	Gate* G;
-	int numberofgates = myCircuit->getNumberGates();
-	
-	for (int i=0; i< numberofgates; i++)
-	{
-		G = myCircuit->getGate(i);
-		if (G->getValue() != LOGIC_X) continue;
-		else
-		{
-			vector<Gate*> Ginputs = G->get_gateInputs(); 
-			for (int j=0; j<Ginputs.size(); j++) 
-				{ 
-					if (Ginputs[j]->getValue()== LOGIC_D || Ginputs[j]->getValue() == LOGIC_DBAR)
-					{
-						dFrontier.push_back(G); break;
-					}
-					
-				}		
-			
-		}
-	}
-  
 }
 
 
@@ -781,34 +699,6 @@ void updateDFrontier(Circuit* myCircuit) {
  */
 void backtrace(Gate* &pi, char &piVal, Gate* objGate, char objVal, Circuit* myCircuit) {
 
-	pi = objGate;int k1;int cnt=0;
-	int num_inversions;
-	char gatetype = pi->get_gateType();
-	
-	if (gatetype == GATE_NOR || gatetype == GATE_NOT || gatetype == GATE_NAND || gatetype == GATE_XNOR)
-		num_inversions=1;
-	else num_inversions=0;
-	
-	
-	while (pi->get_gateType()!=GATE_PI)
-	{ 
-		vector<Gate*> gateinputs = pi->get_gateInputs();//
-		
-		for (k1=0; k1<gateinputs.size(); k1++) 
-			{ 
-				if (gateinputs[k1]->getValue()== LOGIC_X) {pi=gateinputs[k1]; break;} 
-				
-			}
-			
-			gatetype = pi->get_gateType();
-			
-		if (gatetype == GATE_NOR || gatetype == GATE_NOT || gatetype == GATE_NAND || gatetype == GATE_XNOR)
-		{num_inversions++; }
-	}
-	
-	if (num_inversions%2==1) piVal= LogicNot(objVal);
-	else piVal = objVal;
-	
 }
 
 
