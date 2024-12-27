@@ -5,7 +5,7 @@
 #include <vector>
 #include <sstream>
 #include <stdlib.h>
-#include "parse_bench.tab.h"
+#include "parse_bench.tab.h++"
 #include "ClassCircuit.h"
 #include "ClassGate.h"
 
@@ -19,7 +19,7 @@ int i=0;
  
  // stuff from flex that bison needs to know about:
  extern "C" int yylex();
- extern "C" int yyparse();
+ //extern "C" int yyparse();
  
  void yyerror(const char *str) { fprintf(stderr,"error: %s\n", str); } 
  int yywrap() { return 1; }

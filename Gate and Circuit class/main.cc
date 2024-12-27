@@ -35,7 +35,7 @@
 #include <queue>
 #include <time.h>
 #include <stdio.h>
-#include "parse_bench.tab.h"
+#include "parse_bench.tab.h++"
 #include "ClassCircuit.h"
 #include "ClassGate.h"
 #include <limits>
@@ -45,7 +45,7 @@
 using namespace std;
 
 /**  @brief Just for the parser. Don't touch. */
-extern "C" int yyparse();
+//extern "C" int yyparse();
 
 /**  Input file for parser. Don't touch. */
 extern FILE *yyin;

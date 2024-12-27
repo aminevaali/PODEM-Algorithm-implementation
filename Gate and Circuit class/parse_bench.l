@@ -1,3 +1,6 @@
+/***
+Definition Section
+***/
 %{
 #include <cstdio>
 #include <iostream>
@@ -5,9 +8,13 @@
 using namespace std;
 #define YY_DECL extern "C" int yylex()
 
-#include "parse_bench.tab.h"  // to get the token types that we return
+#include "parse_bench.tab.h++"  // to get the token types that we return
 
 %}
+
+/***
+Rules Section
+***/
 %%
 "#"[^\n]*\n     ;
 NAND            return NAND;
