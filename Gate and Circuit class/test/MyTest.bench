@@ -1,0 +1,14 @@
+INPUT(a)
+INPUT(b)
+INPUT(c)
+INPUT(d)
+OUTPUT(z)
+
+# G1
+e = NAND(a, f)
+
+# G2
+f = AND(b, c)
+
+# G3
+z = AND(e, d)

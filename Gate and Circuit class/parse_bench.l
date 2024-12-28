@@ -13,7 +13,7 @@ using namespace std;
 %}
 
 /***
-Rules Section
+Rules Section (Patterns Section)
 ***/
 %%
 "#"[^\n]*\n     ;
